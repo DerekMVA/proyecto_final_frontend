@@ -1,39 +1,191 @@
-<div class="p-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Historial de Ventas</h1>
-        <div class="flex items-center gap-4 flex-shrink-0">
+<div class="p-8 space-y-6">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Historial de ventas</h1>
+            <p class="text-gray-500">Consulta el desempeño comercial y exporta la información que necesitas.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
             <a routerLink="/salidas/clientes"
-                class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700">
+               class="px-4 py-2 rounded-md border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50">
                 Registro de clientes
             </a>
             <a routerLink="/salidas/nueva"
-                class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700">
-                + Registrar Venta
+               class="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold shadow hover:bg-blue-700">
+                + Registrar venta
             </a>
         </div>
-    </div>
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="p-4 text-left"># Factura</th>
-                    <th class="p-4 text-left">Cliente</th>
-                    <th class="p-4 text-left">Fecha</th>
-                    <th class="p-4 text-right">Monto Total</th>
-                    <th class="p-4 text-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4">FAC-2025-001</td>
-                    <td class="p-4 font-medium">Carlos Rodríguez</td>
-                    <td class="p-4">21/10/2025</td>
-                    <td class="p-4 text-right">$1,250.00</td>
-                    <td class="p-4 text-center">
-                        <a routerLink="clientes" class="text-blue-600 hover:underline">Ver Factura</a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <article class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">Ventas registradas</p>
+            <p class="text-3xl font-bold text-gray-900">{{ estadisticas().total }}</p>
+            <p class="text-sm text-gray-400">Actualizado {{ ultimaActualizacion()?.toLocaleTimeString() ?? '—' }}</p>
+        </article>
+        <article class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">Monto total</p>
+            <p class="text-3xl font-bold text-gray-900">{{ estadisticas().montoTotal | currency:'CRC':'symbol' }}</p>
+            <p class="text-sm text-emerald-600">{{ estadisticas().pagadas }} ventas liquidadas</p>
+        </article>
+        <article class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">Pendientes</p>
+            <p class="text-3xl font-bold text-amber-600">{{ estadisticas().pendientes }}</p>
+            <p class="text-sm text-amber-600">{{ estadisticas().montoPendiente | currency:'CRC':'symbol' }} por cobrar</p>
+        </article>
+        <article class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">Anuladas</p>
+            <p class="text-3xl font-bold text-rose-600">{{ estadisticas().anuladas }}</p>
+            <p class="text-sm text-rose-600">{{ estadisticas().montoAnulado | currency:'CRC':'symbol' }} descartados</p>
+        </article>
+    </section>
+
+    <section class="bg-white rounded-lg shadow p-6 space-y-4">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Filtros</h2>
+                <p class="text-sm text-gray-500">Refina la tabla por cliente, estado, fechas o montos.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button type="button"
+                        class="px-4 py-2 rounded-md border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50"
+                        (click)="limpiarFiltros()">
+                    Limpiar filtros
+                </button>
+                <button type="button"
+                        class="px-4 py-2 rounded-md border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 disabled:opacity-50"
+                        (click)="refrescar()"
+                        [disabled]="loading()">
+                    {{ loading() ? 'Actualizando…' : 'Refrescar' }}
+                </button>
+                <button type="button"
+                        class="px-4 py-2 rounded-md bg-green-600 text-white font-semibold hover:bg-green-700 disabled:opacity-50"
+                        (click)="exportarCsv()"
+                        [disabled]="exportando()">
+                    {{ exportando() ? 'Generando…' : 'Exportar CSV' }}
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cliente o factura</label>
+                <input type="search"
+                       class="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       placeholder="Nombre, cédula o código"
+                       [value]="filtroCliente()"
+                       (input)="actualizarCliente($any($event.target).value)">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select class="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        [value]="filtroEstado()"
+                        (change)="actualizarEstado($any($event.target).value)">
+                    <option value="todos">Todos</option>
+                    <option value="Pagada">Pagada</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Anulada">Anulada</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
+                <input type="date" class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                       [value]="filtroFechaInicio()"
+                       (change)="actualizarFechaInicio($any($event.target).value)">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha fin</label>
+                <input type="date" class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                       [value]="filtroFechaFin()"
+                       (change)="actualizarFechaFin($any($event.target).value)">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Monto mínimo</label>
+                <input type="number" min="0" step="0.01"
+                       class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                       [value]="filtroMontoMin()"
+                       (input)="actualizarMontoMin($any($event.target).value)">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Monto máximo</label>
+                <input type="number" min="0" step="0.01"
+                       class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                       [value]="filtroMontoMax()"
+                       (input)="actualizarMontoMax($any($event.target).value)">
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-6 py-4 border-b">
+            <div>
+                <p class="text-sm text-gray-500">Mostrando {{ totalFiltradas() }} de {{ estadisticas().total }} ventas</p>
+                <p class="text-sm text-gray-500">Monto filtrado: {{ montoTotalFiltrado() | currency:'CRC':'symbol' }}</p>
+            </div>
+            <p class="text-sm text-gray-400">
+                Última actualización:
+                <span class="font-medium text-gray-600">{{ ultimaActualizacion()?.toLocaleString('es-CR') ?? 'Pendiente' }}</span>
+            </p>
+        </div>
+
+        <div *ngIf="loading()" class="p-6 space-y-4">
+            <div class="animate-pulse space-y-3">
+                <div class="h-4 bg-slate-200 rounded"></div>
+                <div class="h-4 bg-slate-200 rounded"></div>
+                <div class="h-4 bg-slate-200 rounded"></div>
+            </div>
+        </div>
+
+        <div *ngIf="error() && !loading()" class="p-6 text-red-700 bg-red-50 border-t border-red-200">
+            <p class="font-semibold mb-2">{{ error() }}</p>
+            <button type="button" class="px-4 py-2 bg-red-600 text-white rounded-md" (click)="refrescar()">
+                Reintentar
+            </button>
+        </div>
+
+        <div *ngIf="!loading() && !error()">
+            <div *ngIf="!ventasFiltradas().length" class="p-6 text-center text-gray-500">
+                No hay ventas con los filtros actuales.
+            </div>
+            <div class="overflow-x-auto" *ngIf="ventasFiltradas().length">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Factura</th>
+                            <th class="px-6 py-3 text-left">Cliente</th>
+                            <th class="px-6 py-3 text-left">Estado</th>
+                            <th class="px-6 py-3 text-left">Fecha</th>
+                            <th class="px-6 py-3 text-right">Monto</th>
+                            <th class="px-6 py-3 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let venta of ventasFiltradas(); trackBy: trackByVenta" class="border-t hover:bg-gray-50">
+                            <td class="px-6 py-4 font-semibold text-gray-900">{{ venta.codigo }}</td>
+                            <td class="px-6 py-4">
+                                <p class="font-medium text-gray-900">{{ venta.cliente }}</p>
+                                <p class="text-xs text-gray-500">{{ venta.metodoPago || 'Método no registrado' }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                                      [ngClass]="{
+                                        'bg-emerald-100 text-emerald-800': venta.estado === 'Pagada',
+                                        'bg-amber-100 text-amber-800': venta.estado === 'Pendiente',
+                                        'bg-rose-100 text-rose-800': venta.estado === 'Anulada'
+                                      }">
+                                    {{ venta.estado }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600">{{ formatearFechaTabla(venta.fecha) }}</td>
+                            <td class="px-6 py-4 text-right font-semibold text-gray-900">{{ venta.montoTotal | currency:'CRC':'symbol' }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <a [routerLink]="['/salidas', 'detalle', venta.id]" class="text-blue-600 font-semibold hover:underline">
+                                    Ver factura
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </div>

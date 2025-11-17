@@ -1,43 +1,94 @@
-<div class="p-8">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Crear Nueva Orden</h1>
-    <form class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
-        <div class="mb-4">
-            <label for="tipoOrden" class="block font-medium mb-1">Tipo de Orden</label>
-            <select id="tipoOrden" class="w-full p-2 border rounded-md">
-                <option value="" disabled selected>-- Seleccione una opción --</option>
-                <option value="ensamble">Orden de Ensamble</option>
-                <option value="mantenimiento">Orden de Mantenimiento / Garantía</option>
-            </select>
+<div class="p-6 lg:p-8 space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <p class="text-sm font-semibold text-indigo-600 uppercase tracking-tight">Nueva orden</p>
+            <h1 class="text-3xl font-bold text-gray-900">Registrar orden de trabajo</h1>
+            <p class="text-sm text-gray-500">Captura la solicitud del cliente y asigna el flujo correcto.</p>
         </div>
+        <a routerLink="/ordenes" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 font-medium hover:border-gray-300">Volver a la lista</a>
+    </div>
 
-        <div class="mb-4">
-            <label for="cliente" class="block font-medium mb-1">Cliente</label>
-            <select id="cliente" class="w-full p-2 border rounded-md">
-                <option value="" disabled selected>-- Seleccione un cliente --</option>
-                <option value="cliente1">Carlos Rodríguez</option>
-                <option value="cliente2">Ana Solano</option>
-            </select>
-        </div>
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <article class="lg:col-span-2 formulario-panel">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="campo">
+                    <span>Tipo de orden</span>
+                    <select class="input" [ngModel]="tipo()" (ngModelChange)="actualizarTipo($event)" name="tipo">
+                        <option *ngFor="let tipoItem of tipos" [value]="tipoItem">{{ tipoItem }}</option>
+                    </select>
+                </label>
+                <label class="campo">
+                    <span>Prioridad</span>
+                    <select class="input" [ngModel]="prioridad()" (ngModelChange)="actualizarPrioridad($event)" name="prioridad">
+                        <option *ngFor="let prioridadItem of prioridades" [value]="prioridadItem">{{ prioridadItem }}</option>
+                    </select>
+                </label>
+                <label class="campo">
+                    <span>Canal</span>
+                    <select class="input" [ngModel]="canal()" (ngModelChange)="actualizarCanal($event)" name="canal">
+                        <option *ngFor="let canalItem of canales" [value]="canalItem">{{ canalItem }}</option>
+                    </select>
+                </label>
+                <label class="campo">
+                    <span>Asignar técnico (opcional)</span>
+                    <select class="input" [ngModel]="tecnicoId() ?? ''" (ngModelChange)="seleccionarTecnico($event)" name="tecnico">
+                        <option value="">Sin asignar</option>
+                        <ng-container *ngIf="!cargandoTecnicos(); else loadingTecnicos">
+                            <option *ngFor="let tecnico of tecnicos()" [value]="tecnico.id">{{ tecnico.nombre }} {{ tecnico.especialidad ? '(' + tecnico.especialidad + ')' : '' }}</option>
+                        </ng-container>
+                    </select>
+                </label>
+            </div>
 
-        <div class="mb-4">
-            <label for="descripcion" class="block font-medium mb-1">Descripción / Problema Reportado</label>
-            <textarea id="descripcion" rows="4" class="w-full p-2 border rounded-md"
-                placeholder="Ej: Ensamblar PC Gamer con componentes de la factura #123... o ...La laptop no enciende la pantalla."></textarea>
-        </div>
+            <ng-template #loadingTecnicos>
+                <option disabled>Cargando técnicos...</option>
+            </ng-template>
+            <p *ngIf="tecnicosError()" class="mensaje-error">{{ tecnicosError() }}</p>
 
-        <div class="mb-4">
-            <label for="tecnico" class="block font-medium mb-1">Asignar Técnico (Opcional)</label>
-            <select id="tecnico" class="w-full p-2 border rounded-md">
-                <option value="">Sin asignar</option>
-                <option value="tec1">Derek Venegas (Ensamble)</option>
-                <option value="tec2">Jackson Medina (Mantenimiento)</option>
-            </select>
-        </div>
+            <label class="campo">
+                <span>Cliente</span>
+                <select class="input" [ngModel]="clienteId() ?? ''" (ngModelChange)="seleccionarCliente($event)" name="cliente">
+                    <option value="" disabled>Selecciona un cliente</option>
+                    <ng-container *ngIf="!cargandoClientes(); else loadingClientes">
+                        <option *ngFor="let cliente of clientes()" [value]="cliente.id">{{ cliente.nombre }}</option>
+                    </ng-container>
+                </select>
+            </label>
+            <ng-template #loadingClientes>
+                <option disabled>Cargando clientes...</option>
+            </ng-template>
+            <p *ngIf="clientesError()" class="mensaje-error">{{ clientesError() }}</p>
 
-        <div class="mt-6 border-t pt-6">
-            <button class="w-full bg-blue-600 text-white p-3 rounded-md font-bold hover:bg-blue-700">
-                Crear Orden de Trabajo
-            </button>
-        </div>
-    </form>
+            <label class="campo">
+                <span>Descripción / detalle del trabajo</span>
+                <textarea rows="5" class="textarea" [ngModel]="descripcion()" (ngModelChange)="actualizarDescripcion($event)" name="descripcion" placeholder="Ej: Ensamblar PC gamer basándonos en la cotización #123."></textarea>
+                <span class="text-xs text-gray-500">Mínimo 10 caracteres. Actual: {{ descripcion().length }}</span>
+            </label>
+
+            <label class="campo">
+                <span>Observaciones internas</span>
+                <textarea rows="3" class="textarea" [ngModel]="observaciones()" (ngModelChange)="actualizarObservaciones($event)" name="observaciones" placeholder="Notas adicionales, requerimientos especiales, etc."></textarea>
+            </label>
+
+            <div class="pt-4">
+                <button type="button" class="boton-primario" [disabled]="!puedeRegistrar()" (click)="registrarOrden()">
+                    {{ creando() ? 'Registrando...' : 'Crear orden' }}
+                </button>
+            </div>
+        </article>
+
+        <article class="resumen-panel space-y-4">
+            <h2 class="text-lg font-semibold text-gray-900">Resumen</h2>
+            <ul class="space-y-2 text-sm text-gray-600">
+                <li>Tipo seleccionado: <span class="font-semibold text-gray-900">{{ tipo() }}</span></li>
+                <li>Cliente: <span class="font-semibold text-gray-900">{{ clienteSeleccionado()?.nombre || 'Pendiente' }}</span></li>
+                <li>Prioridad: <span class="font-semibold text-gray-900">{{ prioridad() }}</span></li>
+                <li>Canal: <span class="font-semibold text-gray-900">{{ canal() }}</span></li>
+                <li>Técnico: <span class="font-semibold text-gray-900">{{ tecnicoSeleccionado()?.nombre || 'Sin asignar' }}</span></li>
+            </ul>
+            <div class="p-4 rounded-xl bg-indigo-50 text-indigo-900 text-sm">
+                Asegúrate de detallar correctamente el problema o requerimiento del cliente para evitar reprocesos en taller.
+            </div>
+        </article>
+    </section>
 </div>

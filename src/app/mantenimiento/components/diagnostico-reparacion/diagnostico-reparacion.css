@@ -1,0 +1,11 @@
+section {
+	@apply rounded-2xl border border-gray-100 bg-white shadow-sm;
+}
+
+.chip {
+	@apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
+}
+
+.skeleton {
+	@apply rounded-2xl bg-gray-100 animate-pulse;
+}

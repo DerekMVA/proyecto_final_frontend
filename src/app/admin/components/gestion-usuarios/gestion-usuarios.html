@@ -1,30 +1,252 @@
 <div class="p-8">
     <h1 class="text-3xl font-bold mb-6 text-gray-800">Gestión de Usuarios</h1>
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="p-4 text-left">Nombre Completo</th>
-                    <th class="p-4 text-left">Rol</th>
-                    <th class="p-4 text-center">Estado</th>
-                    <th class="p-4 text-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 font-medium">Mauricio Argüello Solano</td>
-                    <td class="p-4">Administrador</td>
-                    <td class="p-4 text-center"><span
-                            class="bg-green-200 text-green-800 px-2 py-1 rounded-full text-xs">Activo</span></td>
-                    <td class="p-4 text-center">
-                        <div class="flex items-center justify-center gap-4">
-                            <a href="#" class="text-blue-600 hover:underline">Crear</a>
-                            <a href="#" class="text-blue-600 hover:underline">Editar</a>
-                            <a href="#" class="text-blue-600 hover:underline">Eliminar</a>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+
+    <div class="mb-6 flex justify-end">
+        <button type="button"
+            class="bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 transition"
+            (click)="abrirFormularioCrear()">
+            Nuevo usuario
+        </button>
     </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div class="flex gap-3">
+            <button type="button"
+                class="px-4 py-2 rounded-lg border transition font-medium bg-white text-gray-700 border-gray-300"
+                [class.bg-gray-800]="estadoFiltro() === 'activos'"
+                [class.text-white]="estadoFiltro() === 'activos'"
+                [class.border-gray-800]="estadoFiltro() === 'activos'"
+                (click)="cambiarFiltro('activos')">
+                Activos
+            </button>
+            <button type="button"
+                class="px-4 py-2 rounded-lg border transition font-medium bg-white text-gray-700 border-gray-300"
+                [class.bg-gray-800]="estadoFiltro() === 'inactivos'"
+                [class.text-white]="estadoFiltro() === 'inactivos'"
+                [class.border-gray-800]="estadoFiltro() === 'inactivos'"
+                (click)="cambiarFiltro('inactivos')">
+                Inactivos
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:items-center sm:gap-3">
+            <div class="relative w-full sm:w-72">
+                <input type="search"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring focus:ring-gray-200"
+                    placeholder="Buscar por nombre o usuario"
+                    [value]="searchTerm()"
+                    (input)="actualizarBusqueda($any($event.target).value)" />
+                <button *ngIf="searchTerm()" type="button"
+                    class="absolute inset-y-0 right-2 flex items-center text-sm text-gray-500 hover:text-gray-700"
+                    (click)="actualizarBusqueda('')">
+                    Limpiar
+                </button>
+            </div>
+
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+                Página de
+                <select class="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring focus:ring-gray-200"
+                    [value]="pageSize()"
+                    (change)="actualizarTamanoPagina($any($event.target).value)">
+                    <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+                </select>
+                filas
+            </label>
+
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+                Rol
+                <select class="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring focus:ring-gray-200"
+                    [value]="rolFiltro()"
+                    (change)="actualizarRolFiltro($any($event.target).value)">
+                    <option value="todos">Todos los roles</option>
+                    <option *ngFor="let rol of roles()" [value]="rol.id">{{ rol.nombre }}</option>
+                </select>
+            </label>
+        </div>
+    </div>
+
+    <div *ngIf="formVisible()" class="mb-8 bg-white shadow-md rounded-lg border border-gray-100">
+        <div class="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-800">{{ formTitle() }}</h2>
+            <button type="button" class="text-sm text-gray-500 hover:text-gray-800" (click)="cerrarFormulario()">
+                Cancelar
+            </button>
+        </div>
+
+        <form class="px-6 py-6 space-y-4" [formGroup]="form" (ngSubmit)="enviarFormulario()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-gray-700">Nombre completo</span>
+                    <input type="text" formControlName="nombreCompleto"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                        placeholder="Ej: Ana Pérez" />
+                    <span class="text-xs text-red-600"
+                        *ngIf="form.get('nombreCompleto')?.touched && form.get('nombreCompleto')?.invalid">
+                        Este campo es obligatorio.
+                    </span>
+                </label>
+
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-gray-700">Nombre de usuario</span>
+                    <input type="text" formControlName="nombreUsuario"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                        placeholder="Ej: aperez" />
+                    <span class="text-xs text-red-600"
+                        *ngIf="form.get('nombreUsuario')?.touched && form.get('nombreUsuario')?.invalid">
+                        Este campo es obligatorio.
+                    </span>
+                </label>
+
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-gray-700">Contraseña</span>
+                    <input type="password" formControlName="contrasena"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                        [placeholder]="isEditMode() ? 'Deja en blanco para mantener la actual' : '********'" />
+                    <span class="text-xs text-gray-500" *ngIf="isEditMode()">
+                        Deja en blanco para mantener la contraseña actual.
+                    </span>
+                </label>
+
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-gray-700">Salario</span>
+                    <input type="number" formControlName="salario" min="0" step="0.01"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200" />
+                    <span class="text-xs text-red-600"
+                        *ngIf="form.get('salario')?.touched && form.get('salario')?.invalid">
+                        Indica un salario válido.
+                    </span>
+                </label>
+
+                <label class="flex flex-col gap-1 md:col-span-2">
+                    <span class="text-sm font-medium text-gray-700">Rol</span>
+                    <select formControlName="idRol"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200">
+                        <option value="" disabled>Selecciona un rol</option>
+                        <option *ngFor="let rol of roles()" [value]="rol.id">{{ rol.nombre }}</option>
+                    </select>
+                    <span class="text-xs text-red-600"
+                        *ngIf="form.get('idRol')?.touched && form.get('idRol')?.invalid">
+                        Selecciona un rol.
+                    </span>
+                </label>
+            </div>
+
+            <div *ngIf="formError()" class="text-sm text-red-600">
+                {{ formError() }}
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700"
+                    (click)="cerrarFormulario()" [disabled]="formSubmitting()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="px-5 py-2 rounded-lg bg-gray-800 text-white font-semibold hover:bg-gray-900 transition disabled:opacity-50"
+                    [disabled]="formSubmitting()">
+                    {{ formSubmitting() ? 'Guardando…' : (isEditMode() ? 'Guardar cambios' : 'Crear usuario') }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div *ngIf="loading()" class="p-6 text-center text-gray-500">Cargando información...</div>
+
+        <div *ngIf="!loading() && loadError()" class="p-6 text-center text-red-600">
+            {{ loadError() }}
+        </div>
+
+        <ng-container *ngIf="!loading() && !loadError()">
+            <ng-container *ngIf="hasUsuarios(); else emptyState">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-4 text-left">Nombre Completo</th>
+                                <th class="p-4 text-left">Usuario</th>
+                                <th class="p-4 text-left">Rol</th>
+                                <th class="p-4 text-center">Salario</th>
+                                <th class="p-4 text-center">Estado</th>
+                                <th class="p-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let usuario of usuariosPaginados()" class="border-b hover:bg-gray-50">
+                                <td class="p-4 font-medium text-gray-800">{{ usuario.nombreCompleto }}</td>
+                                <td class="p-4 text-gray-600">{{ usuario.nombreUsuario }}</td>
+                                <td class="p-4 text-gray-600">{{ getRoleName(usuario.idRol) }}</td>
+                                <td class="p-4 text-center text-gray-600">{{ usuario.salario | currency:'CRC' }}</td>
+                                <td class="p-4 text-center">
+                                    <span
+                                        class="px-2 py-1 rounded-full text-xs"
+                                        [class.bg-green-200]="!usuario.deleted"
+                                        [class.text-green-800]="!usuario.deleted"
+                                        [class.bg-red-200]="usuario.deleted"
+                                        [class.text-red-800]="usuario.deleted">
+                                        {{ usuario.deleted ? 'Inactivo' : 'Activo' }}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <div class="flex items-center justify-center gap-3">
+                                        <button *ngIf="!usuario.deleted" type="button"
+                                            class="text-blue-600 hover:underline"
+                                            (click)="abrirFormularioEditar(usuario)">
+                                            Editar
+                                        </button>
+                                        <button *ngIf="!usuario.deleted" type="button"
+                                            class="text-red-600 hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
+                                            [disabled]="deletingId() === usuario.id"
+                                            (click)="eliminarUsuario(usuario)">
+                                            {{ deletingId() === usuario.id ? 'Eliminando…' : 'Eliminar' }}
+                                        </button>
+                                        <button *ngIf="usuario.deleted" type="button"
+                                            class="text-green-600 hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
+                                            [disabled]="reactivatingId() === usuario.id"
+                                            (click)="reactivarUsuario(usuario)">
+                                            {{ reactivatingId() === usuario.id ? 'Reactivando…' : 'Reactivar' }}
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="px-6 py-4 flex flex-col gap-3 border-t border-gray-100 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="text-sm text-gray-600">
+                        <ng-container *ngIf="totalFiltrados(); else sinResultados">
+                            Mostrando {{ rangoInicio() }} - {{ rangoFin() }} de {{ totalFiltrados() }} usuarios
+                        </ng-container>
+                        <ng-template #sinResultados>
+                            Sin resultados para los filtros actuales
+                        </ng-template>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button"
+                            class="px-3 py-1 rounded border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
+                            [disabled]="!puedeRetroceder()"
+                            (click)="paginaAnterior()">
+                            Anterior
+                        </button>
+                        <span class="text-sm text-gray-600">
+                            Página {{ totalFiltrados() ? pageIndex() + 1 : 0 }} de {{ totalPaginas() }}
+                        </span>
+                        <button type="button"
+                            class="px-3 py-1 rounded border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
+                            [disabled]="!puedeAvanzar()"
+                            (click)="paginaSiguiente()">
+                            Siguiente
+                        </button>
+                    </div>
+                </div>
+            </ng-container>
+        </ng-container>
+    </div>
+
+    <ng-template #emptyState>
+        <div class="p-6 text-center text-gray-500">
+            {{ estadoFiltro() === 'activos' ? 'No hay usuarios activos registrados.' : 'No hay usuarios inactivos registrados.' }}
+        </div>
+    </ng-template>
 </div>

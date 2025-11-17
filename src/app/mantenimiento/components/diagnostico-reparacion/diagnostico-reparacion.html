@@ -1,28 +1,124 @@
-<div class="p-8">
-    <h1 class="text-3xl font-bold mb-2 text-gray-800">Diagnóstico y Reparación: #GAR-001</h1>
-    <p class="text-lg text-gray-600 mb-6">Técnico Asignado: Jackson Medina</p>
-
-    <div class="bg-white p-6 rounded-lg shadow-md space-y-6">
+<div class="p-6 lg:p-8 space-y-8">
+    <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-            <h2 class="text-xl font-semibold mb-2">Problema Reportado por Cliente</h2>
-            <p class="text-gray-700 p-4 bg-gray-50 rounded-md border">"La laptop no enciende la pantalla, aunque las
-                luces del teclado sí funcionan."</p>
+            <p class="text-sm font-semibold text-blue-600 uppercase tracking-tight">Mantenimiento</p>
+            <h1 class="text-3xl font-bold text-gray-900">Diagnóstico y reparación</h1>
+            <p class="text-sm text-gray-500">Ingresa el ID del ticket o abre este módulo desde la cola.</p>
         </div>
-
-        <div>
-            <label for="diagnostico" class="block text-xl font-semibold mb-2">Diagnóstico del Técnico</label>
-            <textarea id="diagnostico" rows="4" class="w-full p-2 border rounded-md"></textarea>
-        </div>
-
-        <div>
-            <h2 class="text-xl font-semibold mb-2">Piezas Utilizadas</h2>
-            <input type="text" placeholder="Buscar pieza en inventario..." class="w-full p-2 border rounded-md mb-2">
-        </div>
-
-        <div class="border-t pt-6 flex justify-end">
-            <button class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">
-                Finalizar Reparación
-            </button>
-        </div>
+        <a routerLink="/mantenimiento" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 font-medium hover:border-gray-300">
+            Volver a la cola
+        </a>
     </div>
+
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label class="text-sm text-gray-600 space-y-2">
+                ID del ticket
+                <div class="flex gap-3">
+                    <input #ticketInput type="number" class="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [value]="ticketIdActual() ?? ''" (keyup.enter)="cargarDesdeInput(ticketInput.value)">
+                    <button type="button" class="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700" (click)="cargarDesdeInput(ticketInput.value)">
+                        Cargar
+                    </button>
+                </div>
+            </label>
+            <div class="text-sm text-gray-600 space-y-2">
+                Última actualización
+                <div class="h-10 flex items-center px-4 rounded-xl border border-gray-200 text-gray-700">
+                    {{ ultimaActualizacion() ? (ultimaActualizacion() | date:'short') : '—' }}
+                </div>
+            </div>
+            <div class="text-sm text-gray-600 space-y-2">
+                Estado actual
+                <div class="h-10 flex items-center px-4 rounded-xl" [ngClass]="ticket() ? 'bg-blue-50 text-blue-800 border border-blue-100' : 'border border-gray-200 text-gray-500'">
+                    {{ ticket()?.estado || 'Selecciona un ticket' }}
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="loadingTicket()" class="space-y-3">
+            <div class="skeleton h-24"></div>
+            <div class="skeleton h-36"></div>
+        </div>
+
+        <div *ngIf="!loadingTicket() && ticketError()" class="p-4 bg-red-50 text-red-700 rounded-xl">
+            {{ ticketError() }}
+        </div>
+
+        <ng-container *ngIf="!loadingTicket() && !ticketError()">
+            <div *ngIf="ticket() as ticketActual; else instrucciones" class="space-y-6">
+                <article class="rounded-2xl border border-gray-100 bg-slate-50 p-6 space-y-4">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">{{ ticketActual.codigo }}</p>
+                            <h2 class="text-2xl font-semibold text-gray-900">{{ ticketActual.equipo }}</h2>
+                            <p class="text-sm text-gray-500">Cliente: {{ ticketActual.cliente }}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="chip" [ngClass]="ticketActual.prioridad === 'Alta' ? 'text-red-600 bg-red-50' : ticketActual.prioridad === 'Media' ? 'text-amber-600 bg-amber-50' : 'text-emerald-600 bg-emerald-50'">{{ ticketActual.prioridad }}</span>
+                            <span class="chip bg-white border border-gray-200 text-gray-700" *ngIf="ticketActual.tecnicoAsignado">{{ ticketActual.tecnicoAsignado }}</span>
+                        </div>
+                    </div>
+
+                    <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                        <div>
+                            <dt class="text-gray-500">Ingreso</dt>
+                            <dd class="font-medium text-gray-900">{{ ticketActual.ingreso ? (ticketActual.ingreso | date:'short') : '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-500">Entrega estimada</dt>
+                            <dd class="font-medium text-gray-900">{{ ticketActual.entregaEstimada ? (ticketActual.entregaEstimada | date:'short') : '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-500">Último movimiento</dt>
+                            <dd class="font-medium text-gray-900">{{ ticketActual.ultimoMovimiento ? (ticketActual.ultimoMovimiento | date:'short') : '—' }}</dd>
+                        </div>
+                    </dl>
+                    <p class="text-sm text-gray-600" *ngIf="ticketActual.diagnostico">Reporte del cliente: {{ ticketActual.diagnostico }}</p>
+                </article>
+
+                <article class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Diagnóstico técnico *</label>
+                        <textarea rows="4" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [value]="diagnosticoTecnico()" (input)="actualizarDiagnostico($any($event.target).value)"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 mb-2">Acciones realizadas</label>
+                            <textarea rows="4" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Pruebas ejecutadas, componentes ajustados..." [value]="accionesRealizadas()" (input)="actualizarAcciones($any($event.target).value)"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 mb-2">Piezas utilizadas (una por línea)</label>
+                            <textarea rows="4" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Flex display 14''\nCable LVDS" [value]="piezasTexto()" (input)="actualizarPiezas($any($event.target).value)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="text-sm text-gray-600 space-y-2">
+                            Tiempo empleado (horas)
+                            <input type="number" min="0" step="0.5" class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [value]="tiempoHoras()" (input)="actualizarTiempo($any($event.target).value)">
+                        </label>
+                        <label class="text-sm text-gray-600 space-y-2">
+                            Costo estimado (₡)
+                            <input type="number" min="0" class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [value]="costoEstimado()" (input)="actualizarCosto($any($event.target).value)">
+                        </label>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-6">
+                        <div class="text-sm text-gray-500" *ngIf="ticketActual.piezasUtilizadas?.length">
+                            Piezas registradas: <span class="font-medium text-gray-900">{{ ticketActual.piezasUtilizadas?.length }}</span>
+                        </div>
+                        <button type="button" class="px-6 py-3 rounded-2xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60" [disabled]="!puedeGuardar()" (click)="registrarReparacion()">
+                            {{ guardando() ? 'Guardando...' : 'Finalizar reparación' }}
+                        </button>
+                    </div>
+                </article>
+            </div>
+            <ng-template #instrucciones>
+                <div class="p-6 border border-dashed border-gray-200 rounded-2xl text-center text-gray-500">
+                    Selecciona un ticket desde la cola de mantenimiento o ingresa un ID válido para comenzar a documentar el diagnóstico.
+                </div>
+            </ng-template>
+        </ng-container>
+    </section>
 </div>

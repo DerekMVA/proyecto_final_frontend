@@ -1,21 +1,210 @@
 <div class="p-8">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Gestión de Proveedores</h1>
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="p-4 text-left">Nombre</th>
-                    <th class="p-4 text-left">Contacto</th>
-                    <th class="p-4 text-left">Teléfono</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 font-medium">Tech Distributors</td>
-                    <td class="p-4">Juan Pérez</td>
-                    <td class="p-4">8888-8888</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Gestión de Proveedores</h1>
+        <a routerLink="/entradas" class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900">
+            <span aria-hidden="true">&#8592;</span>
+            Volver a Entradas
+        </a>
     </div>
+
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex gap-3">
+            <button type="button"
+                class="px-4 py-2 rounded-lg border transition font-medium bg-white text-gray-700 border-gray-300"
+                [class.bg-gray-800]="estadoFiltro() === 'activos'"
+                [class.text-white]="estadoFiltro() === 'activos'"
+                [class.border-gray-800]="estadoFiltro() === 'activos'"
+                (click)="cambiarFiltro('activos')">
+                Activos
+            </button>
+            <button type="button"
+                class="px-4 py-2 rounded-lg border transition font-medium bg-white text-gray-700 border-gray-300"
+                [class.bg-gray-800]="estadoFiltro() === 'inactivos'"
+                [class.text-white]="estadoFiltro() === 'inactivos'"
+                [class.border-gray-800]="estadoFiltro() === 'inactivos'"
+                (click)="cambiarFiltro('inactivos')">
+                Inactivos
+            </button>
+            <button type="button"
+                class="px-4 py-2 rounded-lg border transition font-medium bg-white text-gray-700 border-gray-300"
+                [class.bg-gray-800]="estadoFiltro() === 'todos'"
+                [class.text-white]="estadoFiltro() === 'todos'"
+                [class.border-gray-800]="estadoFiltro() === 'todos'"
+                (click)="cambiarFiltro('todos')">
+                Todos
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:items-center sm:gap-3">
+            <div class="relative w-full sm:w-72">
+                <input type="search"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring focus:ring-gray-200"
+                    placeholder="Buscar por nombre, contacto o correo"
+                    [value]="busqueda()"
+                    (input)="actualizarBusqueda($any($event.target).value)" />
+                <button *ngIf="busqueda()" type="button"
+                    class="absolute inset-y-0 right-2 flex items-center text-sm text-gray-500 hover:text-gray-700"
+                    (click)="actualizarBusqueda('')">
+                    Limpiar
+                </button>
+            </div>
+
+            <button type="button"
+                class="px-4 py-2 rounded-lg bg-gray-800 text-white font-semibold hover:bg-gray-900 transition"
+                (click)="abrirFormularioCrear()">
+                Nuevo proveedor
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="formVisible()" class="mb-8 bg-white border border-gray-100 rounded-lg shadow">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-800">{{ formTitle() }}</h2>
+            <button type="button" class="text-sm text-gray-500 hover:text-gray-800" (click)="cerrarFormulario()">
+                Cancelar
+            </button>
+        </div>
+        <form class="px-6 py-6 space-y-4" [formGroup]="form" (ngSubmit)="enviarFormulario()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-gray-700">Nombre</span>
+                    <input type="text" formControlName="nombre"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                        placeholder="Ej: Componentes Globales" />
+                    <span class="text-xs text-red-600"
+                        *ngIf="form.get('nombre')?.touched && form.get('nombre')?.invalid">
+                        El nombre es obligatorio.
+                    </span>
+                </label>
+
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-gray-700">Contacto</span>
+                    <input type="text" formControlName="contacto"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                        placeholder="Persona de contacto" />
+                </label>
+
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-gray-700">Teléfono</span>
+                    <input type="text" formControlName="telefono"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                        placeholder="Ej: 8888-8888" />
+                </label>
+
+                <label class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-gray-700">Correo electrónico</span>
+                    <input type="email" formControlName="correo"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                        placeholder="Ej: compras@proveedor.com" />
+                    <span class="text-xs text-red-600"
+                        *ngIf="form.get('correo')?.touched && form.get('correo')?.errors?.['email']">
+                        Ingresa un correo válido.
+                    </span>
+                </label>
+
+                <label class="flex flex-col gap-1 md:col-span-2">
+                    <span class="text-sm font-medium text-gray-700">Dirección</span>
+                    <textarea rows="2" formControlName="direccion"
+                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-gray-200"
+                        placeholder="Dirección física o instrucciones de entrega"></textarea>
+                </label>
+            </div>
+
+            <div *ngIf="formError()" class="text-sm text-red-600">
+                {{ formError() }}
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700"
+                    (click)="cerrarFormulario()" [disabled]="formSubmitting()">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="px-5 py-2 rounded-lg bg-gray-800 text-white font-semibold hover:bg-gray-900 transition disabled:opacity-50"
+                    [disabled]="formSubmitting()">
+                    {{ formSubmitting() ? 'Guardando…' : (isEditMode() ? 'Guardar cambios' : 'Registrar proveedor') }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div *ngIf="loading()" class="p-6 text-center text-gray-500">Cargando proveedores…</div>
+
+        <div *ngIf="!loading() && loadError()" class="p-6 text-center text-red-600">
+            {{ loadError() }}
+        </div>
+
+        <ng-container *ngIf="!loading() && !loadError()">
+            <ng-container *ngIf="hasProveedores(); else emptyState">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-4 text-left">Nombre</th>
+                                <th class="p-4 text-left">Contacto</th>
+                                <th class="p-4 text-left">Teléfono</th>
+                                <th class="p-4 text-left">Correo</th>
+                                <th class="p-4 text-center">Estado</th>
+                                <th class="p-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let proveedor of proveedoresFiltrados()" class="border-b hover:bg-gray-50">
+                                <td class="p-4 font-medium text-gray-800">{{ proveedor.nombre }}</td>
+                                <td class="p-4 text-gray-600">{{ proveedor.contacto || '—' }}</td>
+                                <td class="p-4 text-gray-600">{{ proveedor.telefono || '—' }}</td>
+                                <td class="p-4 text-gray-600">{{ proveedor.correo || '—' }}</td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-1 rounded-full text-xs"
+                                        [class.bg-green-200]="!(proveedor.deleted ?? false)"
+                                        [class.text-green-800]="!(proveedor.deleted ?? false)"
+                                        [class.bg-red-200]="proveedor.deleted ?? false"
+                                        [class.text-red-800]="proveedor.deleted ?? false">
+                                        {{ (proveedor.deleted ?? false) ? 'Inactivo' : 'Activo' }}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <div class="flex items-center justify-center gap-3">
+                                        <button type="button"
+                                            class="text-blue-600 hover:underline"
+                                            (click)="abrirFormularioEditar(proveedor)"
+                                            [disabled]="(proveedor.deleted ?? false)">
+                                            Editar
+                                        </button>
+                                        <button *ngIf="!(proveedor.deleted ?? false)" type="button"
+                                            class="text-red-600 hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
+                                            [disabled]="deletingId() === proveedor.id"
+                                            (click)="eliminarProveedor(proveedor)">
+                                            {{ deletingId() === proveedor.id ? 'Desactivando…' : 'Desactivar' }}
+                                        </button>
+                                        <button *ngIf="proveedor.deleted ?? false" type="button"
+                                            class="text-green-600 hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
+                                            [disabled]="restoringId() === proveedor.id"
+                                            (click)="restaurarProveedor(proveedor)">
+                                            {{ restoringId() === proveedor.id ? 'Restaurando…' : 'Reactivar' }}
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-100 text-sm text-gray-600">
+                    {{ totalFiltrados() }} proveedor(es) coinciden con los filtros.
+                </div>
+            </ng-container>
+        </ng-container>
+    </div>
+
+    <ng-template #emptyState>
+        <div class="p-6 text-center text-gray-500">
+            {{ estadoFiltro() === 'activos'
+                ? 'No hay proveedores registrados.'
+                : estadoFiltro() === 'inactivos'
+                    ? 'No hay proveedores inactivos.'
+                    : 'No se encontraron proveedores para los filtros actuales.' }}
+        </div>
+    </ng-template>
 </div>

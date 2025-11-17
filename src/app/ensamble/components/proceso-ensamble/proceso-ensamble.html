@@ -1,30 +1,121 @@
-<div class="p-8">
-    <h1 class="text-3xl font-bold mb-2 text-gray-800">Proceso de Ensamble: #ENS-001</h1>
-    <p class="text-lg text-gray-600 mb-6">Técnico Asignado: Derek Venegas</p>
-
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold mb-4 border-b pb-3">Lista de Componentes</h2>
-        <div class="space-y-4">
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                <label for="comp1" class="font-medium">Procesador Ryzen 5</label>
-                <input id="comp1" type="checkbox"
-                    class="h-6 w-6 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            </div>
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                <label for="comp2" class="font-medium">Tarjeta Madre B550</label>
-                <input id="comp2" type="checkbox"
-                    class="h-6 w-6 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            </div>
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                <label for="comp3" class="font-medium">16GB RAM DDR4 3200MHz</label>
-                <input id="comp3" type="checkbox"
-                    class="h-6 w-6 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            </div>
+<div class="p-6 lg:p-8 space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <p class="text-sm font-semibold text-blue-600 uppercase tracking-tight">Proceso de ensamble</p>
+            <h1 class="text-3xl font-bold text-gray-900">Control de orden de ensamble</h1>
+            <p class="text-sm text-gray-500">Marca componentes instalados y registra el avance del equipo.</p>
         </div>
-        <div class="mt-6 flex justify-end">
-            <button class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">
-                Completar Ensamble
-            </button>
+        <a routerLink="/ensamble" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 font-medium hover:border-gray-300">
+            Volver a la cola
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <label class="text-sm text-gray-600 space-y-1 col-span-2">
+            Buscar orden por ID
+            <input type="number" placeholder="Ej: 1201" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" (keyup.enter)="cargarDesdeInput($any($event.target).value)">
+        </label>
+        <div class="text-sm text-gray-600 space-y-1">
+            Última actualización
+            <div class="h-10 flex items-center px-4 rounded-xl border border-gray-200 text-gray-700">
+                {{ ultimaActualizacion() ? (ultimaActualizacion() | date:'short') : '—' }}
+            </div>
         </div>
     </div>
+
+    <div *ngIf="loading()" class="space-y-3">
+        <div class="skeleton h-24"></div>
+        <div class="skeleton h-24"></div>
+    </div>
+
+    <div *ngIf="!loading() && error()" class="p-4 bg-red-50 text-red-700 rounded-xl">
+        {{ error() }}
+    </div>
+
+    <div *ngIf="!loading() && !error() && !orden()" class="p-6 border border-dashed border-gray-200 rounded-2xl text-center text-gray-500">
+        Selecciona una orden desde la cola o ingresa el identificador para comenzar.
+    </div>
+
+    <ng-container *ngIf="!loading() && !error() && orden() as ordenActual">
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <article class="xl:col-span-2 orden-panel">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">{{ ordenActual.codigo }}</p>
+                        <h2 class="text-2xl font-semibold text-gray-900">{{ ordenActual.descripcion }}</h2>
+                        <p class="text-sm text-gray-500">Cliente: {{ ordenActual.cliente }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Estado</p>
+                        <p class="text-lg font-semibold">{{ ordenActual.estado }}</p>
+                        <p class="text-xs text-gray-500">Técnico: {{ ordenActual.tecnicoAsignado || 'Sin asignar' }}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mt-6">
+                    <div>
+                        <p class="text-gray-500">Componentes instalados</p>
+                        <p class="font-semibold text-gray-900">{{ componentesInstalados() }}/{{ componentes().length }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Entrega estimada</p>
+                        <p class="font-semibold text-gray-900">{{ ordenActual.fechaEntregaEstimada ? (ordenActual.fechaEntregaEstimada | date:'medium') : '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Progreso</p>
+                        <p class="font-semibold text-gray-900">{{ progresoCalculado() }}%</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 text-sm mt-4">
+                    <div class="flex-1 h-2 rounded-full bg-gray-100">
+                        <div class="h-2 rounded-full bg-blue-600" [style.width.%]="progresoCalculado()"></div>
+                    </div>
+                    <span class="text-gray-600 font-medium">{{ progresoCalculado() }}%</span>
+                </div>
+
+                <div class="mt-8 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">Componentes</h3>
+                        <span class="text-sm text-gray-500">Pendientes: {{ componentesPendientes().length }}</span>
+                    </div>
+                    <ul class="space-y-3">
+                        <li *ngFor="let componente of componentes(); trackBy: trackByComponente" class="componente-item">
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ componente.nombre }}</p>
+                                <p class="text-xs text-gray-500">{{ componente.codigoInventario || 'Sin código' }}</p>
+                            </div>
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+                                <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" [checked]="componente.instalado" (change)="alternarComponente(componente.id)">
+                                Instalado
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="xl:col-span-1 orden-panel space-y-4">
+                <div>
+                    <label class="text-sm text-gray-600">Notas de ensamble</label>
+                    <textarea rows="4" class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [value]="notas()" (input)="actualizarNotas($any($event.target).value)"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600">Pruebas realizadas</label>
+                    <textarea rows="3" class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [value]="pruebas()" (input)="actualizarPruebas($any($event.target).value)"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600">Tiempo invertido (horas)</label>
+                    <input type="number" min="0" step="0.5" class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [value]="tiempoHoras()" (input)="actualizarTiempo($any($event.target).value)">
+                </div>
+                <div class="space-y-2">
+                    <button type="button" class="w-full rounded-xl bg-blue-600 text-white font-semibold px-4 py-2.5 hover:bg-blue-700 disabled:opacity-50" [disabled]="!puedeRegistrar()" (click)="registrarAvance()">
+                        {{ guardando() ? 'Guardando...' : 'Registrar avance' }}
+                    </button>
+                    <button type="button" class="w-full rounded-xl bg-emerald-600 text-white font-semibold px-4 py-2.5 hover:bg-emerald-700 disabled:opacity-50" [disabled]="!puedeRegistrar()" (click)="registrarAvance(true)">
+                        Completar ensamble
+                    </button>
+                </div>
+            </article>
+        </section>
+    </ng-container>
 </div>

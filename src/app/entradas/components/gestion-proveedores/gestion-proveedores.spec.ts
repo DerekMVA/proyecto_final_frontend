@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 
 import { GestionProveedores } from './gestion-proveedores';
 
@@ -8,7 +11,8 @@ describe('GestionProveedores', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GestionProveedores]
+      imports: [GestionProveedores, HttpClientTestingModule],
+      providers: [provideAnimations(), provideRouter([])]
     })
     .compileComponents();
 
