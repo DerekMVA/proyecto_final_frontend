@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { GestionClientes } from './gestion-clientes';
+import { GestionClientes } from './gestion-clientes.component';
 import { ClientesService } from '../../../core/services/clientes.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 

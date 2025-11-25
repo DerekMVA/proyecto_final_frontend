@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { ListaOrdenes } from './lista-ordenes';
+import { ListaOrdenes } from './lista-ordenes.component';
 import { OrdenesService } from '../../../core/services/ordenes.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 import { OrdenTrabajo } from '../../../core/models/orden';

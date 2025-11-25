@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { DashboardReportes } from './components/dashboard-reportes/dashboard-reportes';
-import { GestionUsuarios } from './components/gestion-usuarios/gestion-usuarios';
+import { DashboardReportes } from './components/dashboard-reportes/dashboard-reportes.component';
+import { GestionUsuarios } from './components/gestion-usuarios/gestion-usuarios.component';
 
 export const ADMIN_ROUTES: Routes = [
         { path: '', component: DashboardReportes },

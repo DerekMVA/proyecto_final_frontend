@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { CrearOrden } from './crear-orden';
+import { CrearOrden } from './crear-orden.component';
 import { ClientesService } from '../../../core/services/clientes.service';
 import { TecnicosService } from '../../../core/services/tecnicos.service';
 import { OrdenesService } from '../../../core/services/ordenes.service';

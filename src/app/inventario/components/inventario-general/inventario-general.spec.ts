@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { InventarioGeneral } from './inventario-general';
+import { InventarioGeneral } from './inventario-general.component';
 import { InventarioService } from '../../../core/services/inventario.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 

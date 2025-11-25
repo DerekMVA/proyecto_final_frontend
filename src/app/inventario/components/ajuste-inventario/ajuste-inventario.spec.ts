@@ -2,7 +2,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { AjusteInventario } from './ajuste-inventario';
+import { AjusteInventario } from './ajuste-inventario.component';
 import { InventarioService } from '../../../core/services/inventario.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 

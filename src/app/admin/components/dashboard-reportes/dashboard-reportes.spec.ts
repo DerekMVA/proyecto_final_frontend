@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { DashboardReportes } from './dashboard-reportes';
+import { DashboardReportes } from './dashboard-reportes.component';
 import { ReportesService } from '../../../core/services/reportes.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 import {

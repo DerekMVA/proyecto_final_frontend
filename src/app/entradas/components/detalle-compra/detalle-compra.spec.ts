@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
-import { DetalleCompra } from './detalle-compra';
+import { DetalleCompra } from './detalle-compra.component';
 import { ComprasService } from '../../../core/services/compras.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 import { ProveedoresService } from '../../../core/services/proveedores.service';

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { provideRouter } from '@angular/router';
-import { RegistrarCompra } from './registrar-compra';
+import { RegistrarCompra } from './registrar-compra.component';
 import { ComprasService } from '../../../core/services/compras.service';
 import { ProveedoresService } from '../../../core/services/proveedores.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';

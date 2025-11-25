@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { ListaCompras } from './lista-compras';
+import { ListaCompras } from './lista-compras.component';
 
 describe('ListaCompras', () => {
   let component: ListaCompras;

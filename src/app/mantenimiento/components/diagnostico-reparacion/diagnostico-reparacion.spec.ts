@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { DiagnosticoReparacion } from './diagnostico-reparacion';
+import { DiagnosticoReparacion } from './diagnostico-reparacion.component';
 import { MantenimientoService } from '../../../core/services/mantenimiento.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 import { TicketMantenimiento } from '../../../core/models/mantenimiento';

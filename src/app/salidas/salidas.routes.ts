@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { ListaVentas } from './components/lista-ventas/lista-ventas';
-import { RegistrarVenta } from './components/registrar-venta/registrar-venta';
-import { GestionClientes } from './components/gestion-clientes/gestion-clientes';
+import { ListaVentas } from './components/lista-ventas/lista-ventas.component';
+import { RegistrarVenta } from './components/registrar-venta/registrar-venta.component';
+import { GestionClientes } from './components/gestion-clientes/gestion-clientes.component';
 
 export const SALIDAS_ROUTES: Routes = [
     { path: '', component: ListaVentas },

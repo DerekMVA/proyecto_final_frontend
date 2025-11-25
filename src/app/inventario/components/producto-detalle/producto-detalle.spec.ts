@@ -2,7 +2,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { ProductoDetalle } from './producto-detalle';
+import { ProductoDetalle } from './producto-detalle.component';
 import { InventarioService } from '../../../core/services/inventario.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 

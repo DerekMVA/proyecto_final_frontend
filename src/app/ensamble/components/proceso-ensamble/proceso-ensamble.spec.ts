@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { ProcesoEnsamble } from './proceso-ensamble';
+import { ProcesoEnsamble } from './proceso-ensamble.component';
 import { EnsambleService } from '../../../core/services/ensamble.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
 import { OrdenEnsamble } from '../../../core/models/ensamble';

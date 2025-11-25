@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
-import { RegistrarVenta } from './registrar-venta';
+import { RegistrarVenta } from './registrar-venta.component';
 import { InventarioService } from '../../../core/services/inventario.service';
 import { VentasService } from '../../../core/services/ventas.service';
 import { NotificacionesService } from '../../../core/services/notificaciones.service';
