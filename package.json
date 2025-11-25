@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
-    "build": "ng build",
+    "build": "set NODE_TLS_REJECT_UNAUTHORIZED=0&& ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:proyecto_final": "node dist/proyecto_final/server/server.mjs"

@@ -1,3 +1,3 @@
 export const environment = {
-  apiBaseUrl: 'https://api.midominio.com/api'
+  apiBaseUrl: 'https://localhost:7142/api'
 };

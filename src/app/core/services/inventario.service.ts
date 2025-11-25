@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AjusteInventarioPayload, InventarioItem } from '../models/inventario';
 
@@ -10,14 +10,23 @@ export class InventarioService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   obtenerInventario(): Observable<InventarioItem[]> {
-    return this.http.get<InventarioItem[]>(`${this.baseUrl}/Inventario`);
+    return this.http.get<InventarioItem[]>(`${this.baseUrl}/Productos`);
   }
 
   obtenerProductoPorId(id: number): Observable<InventarioItem> {
-    return this.http.get<InventarioItem>(`${this.baseUrl}/Inventario/${id}`);
+    return this.http.get<InventarioItem>(`${this.baseUrl}/Productos/${id}`);
   }
 
   registrarAjuste(payload: AjusteInventarioPayload): Observable<InventarioItem> {
-    return this.http.post<InventarioItem>(`${this.baseUrl}/Inventario/${payload.idProducto}/ajustes`, payload);
+    return this.obtenerProductoPorId(payload.idProducto).pipe(
+      switchMap(producto => {
+        const actualizado: InventarioItem = {
+          ...producto,
+          stockActual: payload.cantidadNueva,
+          actualizado: new Date().toISOString()
+        };
+        return this.http.put<InventarioItem>(`${this.baseUrl}/Productos/${payload.idProducto}`, actualizado);
+      })
+    );
   }
 }
